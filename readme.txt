@@ -1,0 +1,1 @@
+This program is designed to simulate spin waves using the landau lifshitz gilbert equation. Additional development will focus on including the effects acoustic waves via magnetoelastic coupling
