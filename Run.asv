@@ -4,22 +4,25 @@ clf
 addpath('functions')
 
 %% Load Run Settings
+%Number of lattice sites
+nX = 10;
+nY = 10;
+nZ = 1;
+%Lattice Dimensions
+Lx = 1;
+Ly = 1;
+Lz = 0;
 
 %% Create lattice
-n_points = 5;
-X = linspace(0,1,n_points);
-Y = zeros(size(X));
-Z = Y;
-Y = X;
+
+X = linspace(0,Lx,nX);
+Y = linspace(0,Ly,nY);
+Z = linspace(0,Lz,nZ);
 
 %Grid of lattice points
 [X,Y,Z] = meshgrid(X,Y,Z);
 %Vectorize
 X = unique([X(:) Y(:) Z(:)],'rows');
-%Size of lattice
-nX = numel(unique((X(:,1))));
-nY = numel(unique((X(:,2))));
-nZ = numel(unique((X(:,3))));
 
 % plot3(X(:,1),X(:,2),X(:,3),'.')
 % xlabel('X')
@@ -36,12 +39,10 @@ figure(1)
 clf
 grid on
 vecScale = 1;
-atomScale = 1;
-nFaces = 6;
-tic
+atomScale = .25;
+nFaces = 10;
+
 spinPlot( X, spin0, vecScale,atomScale,nFaces)
-toc
-light('Position',[0,0,1])
 
 
 %% Run Program

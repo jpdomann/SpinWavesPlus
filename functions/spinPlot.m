@@ -1,11 +1,11 @@
-function [h_vec] = spinPlot( x, m, vecScale, atomScale,nFaces )
+function [h_vec,h_light] = spinPlot( x, m, vecScale, atomScale,nFaces )
 %SPINPLOT Summary of this function goes here
 %   Detailed explanation goes here
 
 numPoints = size(x,1);
 
 %lattice point spacing
-spacing = mean(diff(x));
+spacing = mean(diff(unique(x)));
 spacing = min(spacing(spacing>0));
 
 if atomScale > 0
@@ -17,7 +17,8 @@ if atomScale > 0
     ys = xs;
     zs = xs;
     
-    h = zeros(1,numPoints);
+    h = matlab.graphics.chart.primitive.Surface;
+    h = repmat(h,1,numPoints);
     for i = 1:numPoints
         xs(i,:,:) = rs*Xs+x(i,1);
         ys(i,:,:) = rs*Ys+x(i,2);
@@ -27,17 +28,21 @@ if atomScale > 0
         yTemp = reshape(ys(i,:,:),size(Xs));
         zTemp = reshape(zs(i,:,:),size(Xs));
         
-        h(i) = surfl(xTemp,yTemp,zTemp);
+        h(i) = surf(xTemp,yTemp,zTemp);
         hold on
     end
     shading interp
-    material shiny
+    %material([ka kd ks n sc]) sets the ambient/diffuse/specular strength, specular exponent, and specular color reflectance of the objects.
+    material([1 1 1 7 1]) 
+    h_light = light('Position',[-1,-1,1]);
+    
+    h_ax = gca;
+    h_ax.AmbientLightColor = [1 1 1];
     
     for i = 1:numPoints
         h(i).FaceLighting = 'phong';
-        h(i).EdgeAlpha = 0.5;
-        % h(i).FaceColor = [255 50 50]/255;
-        % h(i).FaceAlpha = .6;
+        h(i).FaceColor = [255 50 50]/255;
+        h(i).FaceAlpha = 1.0;
     end
 end
 
