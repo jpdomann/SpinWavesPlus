@@ -12,7 +12,7 @@ t1 = 1e-9;
 tspan = [t0, t1];
 
 %Anonymous ODE function
-dFdt =@(t,state) LLG_equation(t,state,X,Spin,t0,t1,options);
+dFdt =@(t,state) LLG_Mechanics_equation(t,state,X,Spin,t0,t1,options);
 
 %% Solve Differential Equation
 

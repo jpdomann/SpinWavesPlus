@@ -23,7 +23,7 @@ S0 = [0 0 1];
 %Spin Plot Settings
 vecScale = Lx/10;   %size of spin vectors
 atomScale = .25;    %size of atoms (set =0 to turn off atom display)
-nFaces = 20;        %number of sides on the atom (sphere(nFaces))
+nFaces = 5;        %number of sides on the atom (sphere(nFaces))
 
 %Main Routine Options
 H0_mag = 10;          %Uniform Magnetic Bias Field magnitude
@@ -65,7 +65,7 @@ clf
 grid on
 [h_spin,h_X,h_light] = spinPlot( X, spin, vecScale,atomScale,nFaces);
 
-%% Program Options
+%% Run Program
 
 %Update magnetic field direction for each lattice site
 options.H0_dir = repmat(H0_dir,size(X,1),1);
@@ -73,41 +73,21 @@ options.H0_mag = repmat(H0_mag,size(X,1),1);
 options.ODE_options = ODE_options;
 options.matrixSize = size(X);
 
-%% Run Program: Call LLG+Mechanics function
+%% Call LLG function
 [t,x,m] = LLG_Mechanics(X,spin,options);
 
 %% Animate
-
-%Plot initial spin setup
-figure(1)
-clf
-grid on
-[h_spin,h_X,h_light] = spinPlot( X, spin, vecScale,atomScale,nFaces);
-xlim([0,Lx])
-a = 1e-9;
-ylim([-a,a])
-zlim([-a,a])
-view(3)
-
-%initialize variables
 tipStorage = {};
 tipStorage{size(x,1)} = [];
 col = [];
 cols = colormap(parula(numel(t)));
-
-for i = 1:size(X,1)
-    h_tip(i) = matlab.graphics.chart.primitive.Surface;
-    h_tip(i).FaceColor = 'none';
-    h_tip(i).EdgeColor = 'interp';
-    h_tip(i).LineWidth = 2;
-    h_tip(i).Marker = 'none';
-    h_tip(i).Parent = gca;
-end
-
-%turn off warning that appears during first iteration
-s = warning('off','MATLAB:gui:array:InvalidArrayShape');
-
-%Animate!
+h_tip = matlab.graphics.chart.primitive.Surface;
+h_tip.FaceColor = 'none';
+h_tip.EdgeColor = 'interp';
+h_tip.LineWidth = 2;
+h_tip.Marker = 'none';
+h_tip.Parent = gca;
+h_tip.MeshStyle = 'both';
 for i = 1:numel(t)
     
     %update atom position
@@ -116,7 +96,6 @@ for i = 1:numel(t)
         h_X(j).YData = h_X(j).YData + X(j,2) - x(j,2,i);
         h_X(j).ZData = h_X(j).ZData + X(j,3) - x(j,3,i);
     end
-    
     %update spin position
     h_spin.XData = x(:,1,i);
     h_spin.YData = x(:,2,i);
@@ -129,19 +108,27 @@ for i = 1:numel(t)
     h_spin.WData = m1(:,3,i);
                 
     %plot tip position
-    tip = x(:,:,i) + m1(:,:,i);           
-    for j = 1:size(X,1)
+    tip = x(:,:,i) + m1(:,:,i);
+           
+    for j = 1:size(tip,1)
         tipStorage{j} = [tipStorage{j}; tip(j,:)];
         tips = tipStorage{j};
         col = t(1:i)/max(t);
-        %h_tip = surface([tips(:,1) tips(:,1)],[tips(:,2) tips(:,2)],[tips(:,3) tips(:,3)],[col col]);        
-        h_tip(j).XData = [tips(:,1) tips(:,1)];
-        h_tip(j).YData = [tips(:,2) tips(:,2)];
-        h_tip(j).ZData = [tips(:,3) tips(:,3)];
-        h_tip(j).CData = [col col];
+        if i == 1
+            h_tip = surface([tips(:,1) tips(:,1)],[tips(:,2) tips(:,2)],[tips(:,3) tips(:,3)],[col col]);
+        else
+            h_tip.XData = [tips(:,1) tips(:,1)];
+            h_tip.YData = [tips(:,2) tips(:,2)];
+            h_tip.ZData = [tips(:,3) tips(:,3)];
+            h_tip.CData = [col col];
+        end
     end
-
     
+    xlim([0,Lx])
+    a = 1e-9;
+    ylim([-a,a])
+    zlim([-a,a])
+    view(3)
     pause(.001)
 end
 

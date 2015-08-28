@@ -1,4 +1,4 @@
-function [dFdt, x,spin ] = LLG_equation(t,state,X,Spin,t0,t1,options )
+function [dFdt, x,spin ] = LLG_Mechanics_equation(t,state,X,Spin,t0,t1,options )
 %WAVESWAVESWAVES is used to analyzed magnon-phonon interaction (coupled
 %spin and acoustic waves)
 %   This program couples the landau-lifshitz-gilbert equation and the
