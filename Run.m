@@ -4,12 +4,18 @@ clf
 addpath('functions')
 
 %% Global Variables
-global gamma
-gamma = 1e9;
+global gamma mu0 alpha Ms Aex tmax
+gamma = 1e9;            % - gyromagnetic ratio
+mu0 = 4*pi*10^(-7);     % - permeability of free space
+alpha = 0.05;            %unitless - Gilbert Damping
+Ms = 4.8e5;             %A/m - saturation magnetization
+Aex = 1.05e-11;         %J/m - exchange strength
+
+tmax = 100e-9;
 
 %% Load Run Settings
 %Number of lattice sites
-nX = 4;
+nX = 1;
 nY = 1;
 nZ = 1;
 %Lattice Dimensions
@@ -21,13 +27,13 @@ Lz = 0;
 S0 = [0 0 1];
 
 %Spin Plot Settings
-vecScale = Lx/10;   %size of spin vectors
+vecScale = Lx/nX;   %size of spin vectors
 atomScale = .25;    %size of atoms (set =0 to turn off atom display)
 nFaces = 20;        %number of sides on the atom (sphere(nFaces))
 
 %Main Routine Options
-H0_mag = 10;          %Uniform Magnetic Bias Field magnitude
-H0_dir = [1 0 0];    %Uniform Magnetic Bias Field direction
+H0_mag = 5e6;          %Uniform Magnetic Bias Field magnitude
+H0_dir = [-1 0 0];    %Uniform Magnetic Bias Field direction
 
 %Numerical options
 ODE_options=odeset('RelTol',1*10^(-6),'AbsTol',1*10^(-6),...
@@ -83,8 +89,8 @@ figure(1)
 clf
 grid on
 [h_spin,h_X,h_light] = spinPlot( X, spin, vecScale,atomScale,nFaces);
-xlim([0,Lx])
-a = 1e-9;
+xlim([-Lx/nX,Lx+Lx/nX])
+a = vecScale;
 ylim([-a,a])
 zlim([-a,a])
 view(3)
