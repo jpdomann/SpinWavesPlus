@@ -1,4 +1,4 @@
-function [t,x,s] = LLG_Mechanics( X,Spin,options )
+function [t,x,m] = LLG_Mechanics( X,Spin,options )
 %LLG_MECHANICS is used to analyzed magnon-phonon interaction (coupled
 %spin and acoustic waves)
 %   This program couples the landau-lifshitz-gilbert equation and the
@@ -7,8 +7,9 @@ function [t,x,s] = LLG_Mechanics( X,Spin,options )
 
 %% Create Anonymous ODE Function to be Solved
 % Monotonically increasing time 
+global tmax
 t0 = 0; 
-t1 = 1e-9;
+t1 = tmax;
 tspan = [t0, t1];
 
 %Anonymous ODE function
@@ -24,14 +25,14 @@ initial = [X(:);Spin(:)];
 %% Reconstruct Output State
 %input is a column vector, reconfigue into 2D matrices.
 x = zeros([size(X),numel(t)]);
-s = zeros([size(Spin),numel(t)]);
+m = zeros([size(Spin),numel(t)]);
 
 for i = 1:numel(t)
     xState = final(i,1:numel(final(2,:))/2);
     sState = final(i,1+numel(final(2,:))/2:end);
     
     x(:,:,i) = reconstructMatrix(xState,options.matrixSize);
-    s(:,:,i) = reconstructMatrix(sState,options.matrixSize);
+    m(:,:,i) = reconstructMatrix(sState,options.matrixSize);
 end
 
 
