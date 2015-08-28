@@ -6,6 +6,8 @@ function [ H_eff ] = H_effective( X,x,varargin)
 %   inputs: X - refference lattice positions
 %           x - current lattice positions
 
+global gamma mu0 alpha Ms Aex
+
 options = varargin{1};
 
 %% Bias Field

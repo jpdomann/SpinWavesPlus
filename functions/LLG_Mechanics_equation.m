@@ -5,7 +5,7 @@ function [dFdt, x,spin ] = LLG_Mechanics_equation(t,state,X,Spin,t0,t1,options )
 %   acoustic wave equation. Coupling is accomplished through 
 %
 
-global gamma
+global gamma mu0 alpha Ms Aex
 
 %% Reconstruct Input state
 %input is a column vector, reconfigue into 2D matrices.
@@ -13,7 +13,7 @@ xState = state(1:numel(state)/2);
 sState = state(1+numel(state)/2:end);
 
 x = reconstructMatrix(xState,options.matrixSize);
-s = reconstructMatrix(sState,options.matrixSize);
+m = reconstructMatrix(sState,options.matrixSize);
 
 %% Parse out options
 parseStructure(options)
@@ -27,7 +27,7 @@ H_eff_options. H0_mag = options.H0_mag;
 
 
 %% LLG Equation
-dMdt = -abs(gamma) * cross(s,H_eff);
+dMdt = -mu0*abs(gamma) * cross(m,H_eff) - alpha*mu0*abs(gamma) * cross(m,cross(m,H_eff));
 dMdt = dMdt(:);
 
 %% Mechanics
