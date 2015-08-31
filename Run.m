@@ -11,20 +11,24 @@ alpha = 0.05;            %unitless - Gilbert Damping
 Ms = 4.8e5;             %A/m - saturation magnetization
 Aex = 1.05e-11;         %J/m - exchange strength
 
-tmax = 100e-9;
+tmax = 50e-9;          %run time
 
 %% Load Run Settings
+%Lattice Spacing 
+a = 3e-10;
+
 %Number of lattice sites
-nX = 1;
+nX = 25;
 nY = 1;
 nZ = 1;
+
 %Lattice Dimensions
-Lx = 10e-9;
+Lx = a*nX;
 Ly = 0;
 Lz = 0;
 
-%Initial Spin Orientation
-S0 = [0 0 1];
+%Initial Magnetization Orientation
+M0 = [0 0 1];
 
 %Spin Plot Settings
 vecScale = Lx/nX;   %size of spin vectors
@@ -32,11 +36,13 @@ atomScale = .25;    %size of atoms (set =0 to turn off atom display)
 nFaces = 20;        %number of sides on the atom (sphere(nFaces))
 
 %Main Routine Options
-H0_mag = 5e6;          %Uniform Magnetic Bias Field magnitude
+
+%Bias Field
+H0_mag = 0e6;         %Uniform Magnetic Bias Field magnitude
 H0_dir = [-1 0 0];    %Uniform Magnetic Bias Field direction
 
 %Numerical options
-ODE_options=odeset('RelTol',1*10^(-6),'AbsTol',1*10^(-6),...
+ODE_options=odeset('RelTol',1*10^(-4),'AbsTol',1*10^(-4),...
     'InitialStep',[],...
     'InitialSlope',0,...
     'Stats','off');
@@ -63,13 +69,13 @@ clear Y Z
 %% Initialize spins / plot
 
 %initial spin arrangement (uniform)
-spin = repmat(S0,size(X,1),1);
+Spin = repmat(M0,size(X,1),1);
 
 %Plot initial spin setup
 figure(1)
 clf
 grid on
-[h_spin,h_X,h_light] = spinPlot( X, spin, vecScale,atomScale,nFaces);
+[h_spin,h_X,h_light] = spinPlot( X, Spin, vecScale,atomScale,nFaces);
 
 %% Program Options
 
@@ -79,8 +85,57 @@ options.H0_mag = repmat(H0_mag,size(X,1),1);
 options.ODE_options = ODE_options;
 options.matrixSize = size(X);
 
+%% Boundary Conditions
+%Time vector
+nt_bc = 1e3;
+t_bc = linspace(0, tmax, nt_bc);
+
+%circular frequency
+n_cycles = 3;
+omega = n_cycles*2*pi/(tmax);
+
+%Boundary Conditions
+%Control location and spin of first element at x = [0 0 0]
+BCs(1).t = t_bc;
+mtemp = [zeros(nt_bc,1), sin(omega.*t_bc)', cos(omega.*t_bc)'];
+xtemp = [zeros(nt_bc,1), zeros(nt_bc,1), zeros(nt_bc,1)];
+
+%stop rotating spin after one cycle
+condition = t_bc > tmax/n_cycles;
+mtemp(condition,:) = repmat(M0,sum(condition),1);
+
+BCs(1).m = mtemp;
+BCs(1).x  = xtemp;
+
+%Control location and spin of last element at x = [Lx 0 0]
+% BCs(2).t = t_bc;
+% BCs(2).m = [zeros(nt_bc,1), sin(omega.*t_bc)', cos(omega.*t_bc)'];
+% BCs(2).x = [Lx*ones(nt_bc,1), zeros(nt_bc,1), zeros(nt_bc,1)];
+
+nBCs = numel(BCs);
+%The variable ind keeps track of the indices of elements that are subject
+%to boundary conditions. Using this in the ode solver will allow explicit
+%control of the desired nodes. 
+ind = [];
+for i = 1:nBCs
+    xtemp = BCs(i).x;
+    indX = X(:,1) == xtemp(1,1);
+    indY = X(:,2) == xtemp(1,2);
+    indZ = X(:,3) == xtemp(1,3);
+    
+    ind = any([ind,all([indX,indY,indZ],2)],2);
+    BCs(nBCs+1).ind = ind; 
+end
+
+%% Final Options
+options.vecScale = vecScale;
+options.atomScale = atomScale;
+options.nFaces = nFaces;
+
 %% Run Program: Call LLG+Mechanics function
-[t,x,m] = LLG_Mechanics(X,spin,options);
+tic
+[t,x,m] = LLG_Mechanics(X,Spin,options,BCs);
+toc
 
 %% Animate
 
@@ -88,11 +143,11 @@ options.matrixSize = size(X);
 figure(1)
 clf
 grid on
-[h_spin,h_X,h_light] = spinPlot( X, spin, vecScale,atomScale,nFaces);
+[h_spin,h_X,h_light] = spinPlot( X, Spin, vecScale,atomScale,nFaces);
 xlim([-Lx/nX,Lx+Lx/nX])
-a = vecScale;
-ylim([-a,a])
-zlim([-a,a])
+
+ylim([-vecScale,vecScale])
+zlim([-vecScale,vecScale])
 view(3)
 
 %initialize variables
@@ -134,18 +189,18 @@ for i = 1:numel(t)
     h_spin.VData = m1(:,2,i);
     h_spin.WData = m1(:,3,i);
                 
-    %plot tip position
-    tip = x(:,:,i) + m1(:,:,i);           
-    for j = 1:size(X,1)
-        tipStorage{j} = [tipStorage{j}; tip(j,:)];
-        tips = tipStorage{j};
-        col = t(1:i)/max(t);
-        %h_tip = surface([tips(:,1) tips(:,1)],[tips(:,2) tips(:,2)],[tips(:,3) tips(:,3)],[col col]);        
-        h_tip(j).XData = [tips(:,1) tips(:,1)];
-        h_tip(j).YData = [tips(:,2) tips(:,2)];
-        h_tip(j).ZData = [tips(:,3) tips(:,3)];
-        h_tip(j).CData = [col col];
-    end
+%     %plot tip position
+%     tip = x(:,:,i) + m1(:,:,i);           
+%     for j = 1:size(X,1)
+%         tipStorage{j} = [tipStorage{j}; tip(j,:)];
+%         tips = tipStorage{j};
+%         col = t(1:i)/max(t);
+%         %h_tip = surface([tips(:,1) tips(:,1)],[tips(:,2) tips(:,2)],[tips(:,3) tips(:,3)],[col col]);        
+%         h_tip(j).XData = [tips(:,1) tips(:,1)];
+%         h_tip(j).YData = [tips(:,2) tips(:,2)];
+%         h_tip(j).ZData = [tips(:,3) tips(:,3)];
+%         h_tip(j).CData = [col col];
+%     end
 
     
     pause(.001)

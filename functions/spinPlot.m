@@ -52,6 +52,10 @@ h_vec = quiver3(x(:,1),x(:,2),x(:,3),m1(:,1),m1(:,2),m1(:,3),0);
 
 tip = x + m1; 
 
+xlabel('X')
+ylabel('Y')
+zlabel('Z')
+
 grid on
 axis equal
 
