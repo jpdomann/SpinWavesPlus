@@ -18,10 +18,17 @@ tspan = options.tspan;
 if min(abs(t-tspan)) < 1e-14;
     figure(2)
     subplot(1,2,1)
-    vecScale = options.Options.vecScale;
-    atomScale = options.Options.atomScale;
-    nFaces = options.Options.nFaces;
-    spinPlot( x, m, vecScale,atomScale,nFaces);
+%     vecScale = options.Options.vecScale;
+%     atomScale = options.Options.atomScale;
+%     nFaces = options.Options.nFaces;
+%     spinPlot( x, m, vecScale,atomScale,nFaces);
+    hold off
+    plot(m(:,1),'r')
+    hold on
+    plot(m(:,2),'g')
+    plot(m(:,3)-1,'b')
+    plot(sum(sqrt(m.^2),2)-1,'c')
+    legend('x','y','z-1', 'total-1','Location','Northeast')
 end
 
 %% Bias Field
@@ -71,11 +78,12 @@ if min(abs(t-tspan)) < 1e-14;
     subplot(1,2,2)
     h_old = findobj('Parent',gca,'Type','line');
     delete(h_old)
-    h(1) = plot(d2xx); 
+     h(1) = plot(d2xx,'r'); 
     hold on
-    h(2) = plot(d2yx); 
-    h(3) = plot(d2zx); 
+    h(2) = plot(d2yx,'g'); 
+    h(3) = plot(d2zx,'b'); 
     legend('xx','yx','zx')
+    pause(.01)
 end
 
 %Compute Exchange Field

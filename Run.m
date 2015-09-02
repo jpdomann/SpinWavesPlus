@@ -10,7 +10,6 @@ mu0 = 4*pi*10^(-7);     % - permeability of free space
 alpha = 0.05;            %unitless - Gilbert Damping
 Ms = 4.8e5;             %A/m - saturation magnetization
 Aex = 1.05e-11;         %J/m - exchange strength
-
 tmax = 50e-9;          %run time
 
 %% Load Run Settings
@@ -18,7 +17,7 @@ tmax = 50e-9;          %run time
 a = 3e-10;
 
 %Number of lattice sites
-nX = 25;
+nX = 20;
 nY = 1;
 nZ = 1;
 
@@ -38,8 +37,8 @@ nFaces = 20;        %number of sides on the atom (sphere(nFaces))
 %Main Routine Options
 
 %Bias Field
-H0_mag = 0e6;         %Uniform Magnetic Bias Field magnitude
-H0_dir = [-1 0 0];    %Uniform Magnetic Bias Field direction
+H0_mag = 1e5;         %Uniform Magnetic Bias Field magnitude
+H0_dir = [0 0 1];    %Uniform Magnetic Bias Field direction
 
 %Numerical options
 ODE_options=odeset('RelTol',1*10^(-4),'AbsTol',1*10^(-4),...
@@ -87,7 +86,7 @@ options.matrixSize = size(X);
 
 %% Boundary Conditions
 %Time vector
-nt_bc = 1e3;
+nt_bc = 200;
 t_bc = linspace(0, tmax, nt_bc);
 
 %circular frequency
@@ -95,17 +94,23 @@ n_cycles = 3;
 omega = n_cycles*2*pi/(tmax);
 
 %Boundary Conditions
+BCs = [];
+
 %Control location and spin of first element at x = [0 0 0]
-BCs(1).t = t_bc;
-mtemp = [zeros(nt_bc,1), sin(omega.*t_bc)', cos(omega.*t_bc)'];
-xtemp = [zeros(nt_bc,1), zeros(nt_bc,1), zeros(nt_bc,1)];
+% BCs(1).t = t_bc;
+% offset = 1;
+% amp = .2;
+% mXtemp = amp.*sin(omega.*t_bc)';
+% mYtemp = amp.*cos(omega.*t_bc)';
+% mZtemp = 1-sqrt(mXtemp.^2 + mYtemp.^2);
+% mtemp = [mXtemp, mYtemp , mZtemp];
+% xtemp = [zeros(nt_bc,1), zeros(nt_bc,1), zeros(nt_bc,1)];
 
-%stop rotating spin after one cycle
-condition = t_bc > tmax/n_cycles;
-mtemp(condition,:) = repmat(M0,sum(condition),1);
-
-BCs(1).m = mtemp;
-BCs(1).x  = xtemp;
+% %stop rotating spin after one cycle
+% condition = t_bc > tmax/n_cycles;
+% mtemp(condition,:) = repmat(M0,sum(condition),1);
+% BCs(1).m = mtemp;
+% BCs(1).x  = xtemp;
 
 %Control location and spin of last element at x = [Lx 0 0]
 % BCs(2).t = t_bc;
@@ -189,7 +194,7 @@ for i = 1:numel(t)
     h_spin.VData = m1(:,2,i);
     h_spin.WData = m1(:,3,i);
                 
-%     %plot tip position
+    %plot tip position
 %     tip = x(:,:,i) + m1(:,:,i);           
 %     for j = 1:size(X,1)
 %         tipStorage{j} = [tipStorage{j}; tip(j,:)];

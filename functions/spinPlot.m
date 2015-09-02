@@ -47,7 +47,14 @@ if atomScale > 0
 end
 
 m1 = m.*vecScale;
-h_vec = quiver3(x(:,1),x(:,2),x(:,3),m1(:,1),m1(:,2),m1(:,3),0);
+
+% h_vec = quiver3(x(:,1),x(:,2),x(:,3),m1(:,1),m1(:,2),m1(:,3),0);
+
+h_vec = coneplot(x(:,1),x(:,2),x(:,3),m1(:,1),m1(:,2),m1(:,3),0,'nointerp');
+h_vec.FaceColor = 'red';
+h_vec.EdgeColor = 'none';
+h_vec.DiffuseStrength = 0.8;
+
 % vecMag = (h_vec.UData).^2 + (h_vec.VData).^2 + (h_vec.WData).^2;
 
 tip = x + m1; 
